@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StudentCash - Personal Finance</title>
+  <style>
+    /* Reset CSS */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('gif.gif') no-repeat center center fixed;
+      background-size: cover;
+      color: #e0f2f1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Overlay */
+    body:before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.2);
+      z-index: -1;
+    }
+
+    /* Nav Bar */
+    nav {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 30px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 10px;
+      margin-top: 20px;
+      color: #a5d6a7;
+      font-weight: 600;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Simple SVG icon for logo */
+    .logo svg {
+      width: 32px;
+      height: 32px;
+      fill: #00bfa5;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+    }
+
+    nav ul li a {
+      color: #e0f2f1;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    nav ul li a:hover {
+      color: #00bfa5;
+    }
+
+    /* User icon */
+    .user-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #a5d6a7;
+      cursor: pointer;
+      transition: fill 0.3s ease;
+    }
+
+    .user-icon svg:hover {
+      fill: #00bfa5;
+    }
+
+    /* Main content */
+    main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      max-width: 700px;
+      margin: 60px 0;
+    }
+
+    h1 {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }
+
+    p {
+      font-size: 1.8rem;
+      margin-bottom: 40px;
+      text-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+    }
+
+    a.cta-button {
+      background-color: #00bfa5;
+      color: white;
+      padding: 16px 40px;
+      border-radius: 40px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 12px rgba(0,191,165,0.6);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    a.cta-button:hover {
+      background-color: #008e76;
+      box-shadow: 0 6px 16px rgba(0,142,118,0.8);
+    }
+
+    /* Footer */
+    footer {
+      width: 100%;
+      max-width: 1200px;
+      padding: 15px 30px;
+      background: rgba(0, 0, 0, 0.25);
+      color: #a5d6a7;
+      font-size: 1rem;
+      text-align: center;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+      margin-bottom: 10px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">
+      <!-- Simple finance/book icon -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6h16v2H4zm0 4h16v2H4zm0 4h10v2H4z"/>
+      </svg>
+      <span>StudentCash</span>
+    </div>
+
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Classes</a></li>
+      <li><a href="#">Profile</a></li>
+      <li><a href="#">Logout</a></li>
+    </ul>
+
+    <div class="user-icon" title="User Profile">
+      <!-- Simple user icon -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 8-4 8-4s8 0 8 4v2H4v-2z"/>
+      </svg>
+    </div>
+  </nav>
+
+  <main>
+    <h1>StudentCash</h1>
+    <p>Learn how to manage your money. Become financially smart.</p>
+    <a href="email_e_password.html" class="cta-button">Access the Platform</a>
+  </main>
+
+  <footer>
+    &copy; 2025 StudentCash. 
+  </footer>
+
+</body>
+</html>
