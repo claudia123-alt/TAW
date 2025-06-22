@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account - StudentCash</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url("im.jpg") no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: -1;
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 35px 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+      width: 400px;
+    }
+
+    h2 {
+      color: #1c5c68;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 14px;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      background-color: #1c5c68;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #144a53;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.9rem;
+    }
+
+    .link a {
+      color: #1c5c68;
+      text-decoration: none;
+    }
+
+    .link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Create an Account</h2>
+    <form>
+      <label for="fullname">Full Name</label>
+      <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="Enter your email" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Create a password" required />
+
+      <label for="perfil">Role</label>
+      <select id="perfil" name="perfil" required>
+        <option value="">Select a role</option>
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+      </select>
+
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="link">
+      Already have an account? <a href="email_e_password.html">Login here</a>
+    </div>
+  </div>
+</body>
+</html>
