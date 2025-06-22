@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StudentCash - Student Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f1fefc;
+      color: #1c5c68;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 260px;
+      background: #1c5c68;
+      display: flex;
+      flex-direction: column;
+      padding: 30px 20px;
+      box-shadow: 2px 0 10px rgba(28,92,104,0.8);
+      gap: 40px;
+      color: #d0e8ea;
+      user-select: none;
+    }
+    .sidebar h2 {
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 15px;
+      letter-spacing: 1.2px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .nav-item {
+      color: #a9d6db;
+      font-weight: 600;
+      font-size: 1.15rem;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: #40c4ca;
+      color: white;
+      box-shadow: 0 0 10px #40c4ca;
+    }
+    .main-content {
+      flex: 1;
+      background: white;
+      padding: 40px 50px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      box-shadow: inset 0 0 40px #d0e8ea20;
+      border-radius: 0 25px 25px 0;
+    }
+    .header {
+      margin-bottom: 45px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #1c5c68;
+      user-select: none;
+    }
+    .header h1 {
+      font-weight: 700;
+      font-size: 2.8rem;
+      letter-spacing: 0.05em;
+    }
+    .search-container {
+      position: relative;
+      width: 320px;
+    }
+    .search-container input {
+      width: 100%;
+      padding: 13px 45px 13px 18px;
+      border-radius: 30px;
+      border: 2px solid #1c5c68;
+      outline: none;
+      font-size: 1rem;
+      font-weight: 500;
+      background: #f1fefc;
+      color: #1c5c68;
+      transition: border-color 0.3s ease;
+    }
+    .search-container input::placeholder {
+      color: #6999a0;
+      font-weight: 400;
+    }
+    .search-container input:focus {
+      border-color: #40c4ca;
+      box-shadow: 0 0 8px #40c4caaa;
+    }
+    .search-icon {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      fill: #6999a0;
+      pointer-events: none;
+    }
+    .classes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(320px,1fr));
+      gap: 28px;
+    }
+    .class-card {
+      background: #e3f0f1;
+      border-radius: 20px;
+      padding: 28px 35px;
+      box-shadow: 0 8px 25px #40c4ca33;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+      color: #1c5c68;
+    }
+    .class-card:hover {
+      transform: translateY(-7px);
+      box-shadow: 0 0 35px #40c4cacc;
+    }
+    .class-title {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      letter-spacing: 0.03em;
+      user-select: text;
+    }
+    .class-info {
+      font-size: 1.1rem;
+      color: #3a5f67;
+      margin-bottom: 20px;
+      line-height: 1.4;
+      letter-spacing: 0.02em;
+      user-select: text;
+    }
+    .progress-container {
+      background: #c9e6e8;
+      border-radius: 20px;
+      height: 16px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .progress-bar {
+      background: #1c5c68;
+      height: 100%;
+      border-radius: 20px 0 0 20px;
+      transition: width 0.4s ease;
+    }
+    .grade-info {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #145057;
+      user-select: text;
+    }
+    footer {
+      margin-top: auto;
+      text-align: center;
+      font-size: 0.95rem;
+      color: #6999a0;
+      padding: 22px 0 14px 0;
+      user-select: none;
+    }
+    .main-content::-webkit-scrollbar {
+      width: 10px;
+    }
+    .main-content::-webkit-scrollbar-thumb {
+      background-color: #1c5c68aa;
+      border-radius: 12px;
+    }
+    @media (max-width: 900px) {
+      .main-content { padding: 30px 20px; }
+      .search-container { width: 100%; }
+    }
+    @media (max-width: 600px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 18px 12px;
+        gap: 15px;
+      }
+      .nav-item {
+        flex: none;
+        padding: 12px 18px;
+        font-size: 1rem;
+      }
+      .main-content {
+        height: calc(100vh - 90px);
+        padding: 20px 15px 30px 15px;
+      }
+      .classes-grid {
+        grid-template-columns: 1fr;
+        gap: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <h2>StudentCash</h2>
+    <a class="nav-item active" data-section="classes">My Classes</a>
+    <a class="nav-item" data-section="grades">Grades</a>
+    <a class="nav-item" data-section="attendance">Attendance</a>
+    <a class="nav-item" data-section="profile">Profile</a>
+    <a class="nav-item" id="logout">Logout</a>
+  </aside>
+
+  <main class="main-content">
+    <div class="header">
+      <h1 id="sectionTitle">My Enrolled Classes</h1>
+      <div class="search-container">
+        <input type="search" id="search" placeholder="Search classes..." />
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 21l-4.35-4.35m2.6-5.15a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0z" stroke="#6999a0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="classes-grid" id="contentArea"></div>
+
+    <footer>
+      &copy; 2025 StudentCash | Student Dashboard
+    </footer>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById('search');
+    const contentArea = document.getElementById('contentArea');
+    const sectionTitle = document.getElementById('sectionTitle');
+    const navLinks = document.querySelectorAll('.nav-item[data-section]');
+    const logoutBtn = document.getElementById('logout');
+
+    const studentClasses = [
+      {id:1, title:'Finance 101', date:'2025-06-20', time:'10:00', progress: 65, grade: 'B+'},
+      {id:2, title:'Budgeting Basics', date:'2025-06-22', time:'14:00', progress: 80, grade: 'A-'},
+      {id:3, title:'Investing for Students', date:'2025-06-21', time:'09:00', progress: 40, grade: 'C+'},
+      {id:4, title:'Crypto & Blockchain', date:'2025-06-23', time:'13:30', progress: 90, grade: 'A'},
+    ];
+
+    const attendanceData = [
+      { title: 'Finance 101', attended: 8, total: 10 },
+      { title: 'Budgeting Basics', attended: 10, total: 10 },
+      { title: 'Investing for Students', attended: 6, total: 10 },
+      { title: 'Crypto & Blockchain', attended: 9, total: 10 },
+    ];
+
+    const profileData = {
+      name: 'Joana Silva',
+      email: 'joana.silva@studentcash.com',
+      studentId: 'SC2025123',
+      major: 'Finance & Economics',
+      year: '2nd Year',
+    };
+
+    function renderClasses() {
+      sectionTitle.textContent = 'My Enrolled Classes';
+      searchInput.style.display = '';
+      contentArea.innerHTML = '';
+      studentClasses.forEach(cls => {
+        const card = document.createElement('div');
+        card.classList.add('class-card');
+        card.setAttribute('data-title', cls.title.toLowerCase());
+        card.innerHTML = `
+          <div class="class-title">${cls.title}</div>
+          <div class="class-info">Next session: ${cls.date} at ${cls.time}</div>
+          <div class="progress-container"><div class="progress-bar" style="width: ${cls.progress}%;"></div></div>
+          <div class="grade-info">Current Grade: ${cls.grade}</div>
+        `;
+        contentArea.appendChild(card);
+      });
+    }
+
+    function renderGrades() {
+      sectionTitle.textContent = 'Grades';
+      searchInput.style.display = 'none';
+      contentArea.innerHTML = '';
+      studentClasses.forEach(cls => {
+        const card = document.createElement('div');
+        card.classList.add('class-card');
+        card.innerHTML = `
+          <div class="class-title">${cls.title}</div>
+          <div class="grade-info">Final Grade: ${cls.grade}</div>
+        `;
+        contentArea.appendChild(card);
+      });
+    }
+
+    function renderAttendance() {
+      sectionTitle.textContent = 'Attendance';
+      searchInput.style.display = 'none';
+      contentArea.innerHTML = '';
+      attendanceData.forEach(cls => {
+        const percentage = Math.round((cls.attended / cls.total) * 100);
+        const card = document.createElement('div');
+        card.classList.add('class-card');
+        card.innerHTML = `
+          <div class="class-title">${cls.title}</div>
+          <div class="class-info">Attended ${cls.attended} of ${cls.total} classes (${percentage}%)</div>
+          <div class="progress-container"><div class="progress-bar" style="width: ${percentage}%;"></div></div>
+        `;
+        contentArea.appendChild(card);
+      });
+    }
+
+    function renderProfile() {
+      sectionTitle.textContent = 'My Profile';
+      searchInput.style.display = 'none';
+      contentArea.innerHTML = `
+        <div class="class-card">
+          <div class="class-title">Name: ${profileData.name}</div>
+          <div class="class-info">
+            Email: ${profileData.email}<br>
+            Student ID: ${profileData.studentId}<br>
+            Major: ${profileData.major}<br>
+            Year: ${profileData.year}
+          </div>
+        </div>
+      `;
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        const section = link.getAttribute('data-section');
+        if (section === 'classes') renderClasses();
+        else if (section === 'grades') renderGrades();
+        else if (section === 'attendance') renderAttendance();
+        else if (section === 'profile') renderProfile();
+      });
+    });
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      const cards = contentArea.querySelectorAll('.class-card');
+      cards.forEach(card => {
+        const title = card.getAttribute('data-title');
+        card.style.display = title && title.includes(query) ? '' : 'none';
+      });
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    renderClasses();
+  </script>
+
+</body>
+</html>
