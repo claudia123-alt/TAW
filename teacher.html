@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teacher Dashboard - StudentCash</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f1fefc;
+      color: #333;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    header {
+      background-color: #1c5c68;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0;
+    }
+    section {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #1c5c68;
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #1c5c68;
+      color: white;
+    }
+    button {
+      background: #1c5c68;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #145057;
+    }
+    label {
+      font-weight: 600;
+    }
+    select, input[type="file"] {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 300px;
+    }
+    .student-list {
+      max-height: 250px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+    }
+    .student-item {
+      margin-bottom: 8px;
+    }
+    canvas {
+      max-width: 100%;
+      height: 300px;
+    }
+    .materials-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+    }
+    .material-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .material-item button {
+      padding: 6px 10px;
+      background: #c0392b;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .material-item button:hover {
+      background: #962d22;
+    }
+    a.material-link {
+      color: #1c5c68;
+      text-decoration: none;
+    }
+    a.material-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Teacher Dashboard – StudentCash</h1>
+    <p>Manage your classes and attendance</p>
+  </header>
+
+  <section>
+    <h2>Your Classes</h2>
+    <label for="class-select">Select a class:</label>
+    <select id="class-select">
+      <!-- Options populated by JS -->
+    </select>
+
+    <div id="class-info"></div>
+
+    <form id="attendance-form" style="display:none;">
+      <h3>Mark Attendance</h3>
+      <div class="student-list" id="students-container">
+        <!-- Students checkboxes here -->
+      </div>
+      <button type="submit">Save Attendance</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Attendance Statistics</h2>
+    <canvas id="attendance-chart"></canvas>
+  </section>
+
+  <section>
+    <h2>Class Materials</h2>
+    <label for="upload-file">Upload material (PDF, slides, docs):</label>
+    <input type="file" id="upload-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" />
+    <button id="upload-button" disabled>Upload</button>
+
+    <div class="materials-list" id="materials-list">
+      <!-- List of materials -->
+    </div>
+  </section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Simulated classes + students + attendance (from before)
+  const classes = [
+    {id: 1, title: "Budgeting Basics", date: "2025-06-20", time: "10:00", students: [
+      {id: 101, name: "Alice"},
+      {id: 102, name: "Bruno"},
+      {id: 103, name: "Carla"}
+    ]},
+    {id: 2, title: "Investing 101", date: "2025-06-22", time: "14:00", students: [
+      {id: 101, name: "Alice"},
+      {id: 104, name: "Daniel"},
+      {id: 105, name: "Eva"}
+    ]}
+  ];
+  const attendanceRecords = {1: [101, 103], 2: [104, 105]};
+  // New: materials stored by class_id in-memory
+  const materialsByClass = {
+    1: [
+      {id: 1, name: "Budgeting_Slides.pdf", url: "#"},
+      {id: 2, name: "Budgeting_Worksheet.docx", url: "#"}
+    ],
+    2: []
+  };
+
+  // Elements
+  const classSelect = document.getElementById('class-select');
+  const studentsContainer = document.getElementById('students-container');
+  const attendanceForm = document.getElementById('attendance-form');
+  const classInfo = document.getElementById('class-info');
+  const uploadFileInput = document.getElementById('upload-file');
+  const uploadButton = document.getElementById('upload-button');
+  const materialsList = document.getElementById('materials-list');
+
+  // Populate classes dropdown
+  function populateClasses() {
+    classes.forEach(c => {
+      const option = document.createElement('option');
+      option.value = c.id;
+      option.textContent = `${c.title} - ${c.date} at ${c.time}`;
+      classSelect.appendChild(option);
+    });
+  }
+
+  // Render students list with checkboxes for selected class
+  function renderStudents(classId) {
+    studentsContainer.innerHTML = "";
+    const selectedClass = classes.find(c => c.id == classId);
+    if (!selectedClass) return;
+
+    classInfo.textContent = `Class: ${selectedClass.title} | Date: ${selectedClass.date} | Time: ${selectedClass.time}`;
+    attendanceForm.style.display = "block";
+
+    const presentStudents = attendanceRecords[classId] || [];
+
+    selectedClass.students.forEach(student => {
+      const div = document.createElement('div');
+      div.className = 'student-item';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = 'student-' + student.id;
+      checkbox.name = 'present';
+      checkbox.value = student.id;
+      if (presentStudents.includes(student.id)) checkbox.checked = true;
+
+      const label = document.createElement('label');
+      label.htmlFor = checkbox.id;
+      label.textContent = student.name;
+
+      div.appendChild(checkbox);
+      div.appendChild(label);
+      studentsContainer.appendChild(div);
+    });
+  }
+
+  // Save attendance (simulate backend call)
+  attendanceForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const classId = classSelect.value;
+    const checkedBoxes = [...attendanceForm.elements['present']].filter(chk => chk.checked);
+    const presentIds = checkedBoxes.map(chk => parseInt(chk.value));
+    attendanceRecords[classId] = presentIds;
+
+    alert('Attendance saved!');
+    updateChart();
+  });
+
+  // Chart.js attendance statistics - total presence count by student across all classes
+  const ctx = document.getElementById('attendance-chart').getContext('2d');
+  let attendanceChart;
+
+  function updateChart() {
+    // Count total presences per student
+    const presenceCount = {};
+    classes.forEach(c => {
+      const present = attendanceRecords[c.id] || [];
+      c.students.forEach(s => {
+        presenceCount[s.name] = (presenceCount[s.name] || 0) + (present.includes(s.id) ? 1 : 0);
+      });
+    });
+
+    const labels = Object.keys(presenceCount);
+    const data = Object.values(presenceCount);
+
+    if (attendanceChart) attendanceChart.destroy();
+
+    attendanceChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Attendance Count',
+          data,
+          backgroundColor: '#1c5c68'
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true, stepSize: 1 }
+        }
+      }
+    });
+  }
+
+  // Upload file logic (simulated in memory)
+  uploadFileInput.addEventListener('change', () => {
+    uploadButton.disabled = !uploadFileInput.files.length;
+  });
+
+  uploadButton.addEventListener('click', () => {
+    const classId = parseInt(classSelect.value);
+    if (!classId) return alert('Please select a class first.');
+
+    const file = uploadFileInput.files[0];
+    if (!file) return alert('No file selected.');
+
+    // Simulate upload by adding to materialsByClass (id incremented)
+    const newId = Date.now(); // simple unique id
+    const material = {
+      id: newId,
+      name: file.name,
+      url: "#" // no real URL, just placeholder
+    };
+
+    if (!materialsByClass[classId]) materialsByClass[classId] = [];
+    materialsByClass[classId].push(material);
+
+    uploadFileInput.value = '';
+    uploadButton.disabled = true;
+
+    renderMaterials(classId);
+    alert('Material uploaded (simulated).');
+  });
+
+  // Render list of materials for selected class
+  function renderMaterials(classId) {
+    materialsList.innerHTML = "";
+    const materials = materialsByClass[classId] || [];
+
+    if (!materials.length) {
+      materialsList.textContent = "No materials uploaded for this class.";
+      return;
+    }
+
+    materials.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'material-item';
+
+      const link = document.createElement('a');
+      link.href = m.url;
+      link.textContent = m.name;
+      link.className = 'material-link';
+      link.target = "_blank";
+
+      const btnDelete = document.createElement('button');
+      btnDelete.textContent = 'Delete';
+      btnDelete.onclick = () => {
+        if (confirm(`Delete material "${m.name}"?`)) {
+          const idx = materialsByClass[classId].findIndex(mat => mat.id === m.id);
+          if (idx > -1) materialsByClass[classId].splice(idx, 1);
+          renderMaterials(classId);
+        }
+      };
+
+      div.appendChild(link);
+      div.appendChild(btnDelete);
+      materialsList.appendChild(div);
+    });
+  }
+
+  // On class change, render students and materials
+  classSelect.addEventListener('change', () => {
+    const classId = classSelect.value;
+    renderStudents(classId);
+    renderMaterials(classId);
+  });
+
+  // Init
+  populateClasses();
+  if (classes.length) {
+    classSelect.value = classes[0].id;
+    renderStudents(classes[0].id);
+    renderMaterials(classes[0].id);
+    updateChart();
+  }
+</script>
+</body>
+</html>
