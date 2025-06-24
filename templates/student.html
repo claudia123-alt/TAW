@@ -164,6 +164,90 @@
       color: #145057;
       user-select: text;
     }
+    .attendance-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .attended {
+      background: #d4edda;
+      color: #155724;
+    }
+    .not-attended {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .profile-card {
+      background: #e3f0f1;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 25px #40c4ca33;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .profile-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .profile-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .profile-label {
+      font-weight: 600;
+      color: #3a5f67;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .profile-value {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #1c5c68;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .stat-card {
+      background: #c9e6e8;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1c5c68;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: #3a5f67;
+      font-weight: 500;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6999a0;
+      font-size: 1.1rem;
+    }
+    .error {
+      text-align: center;
+      padding: 40px;
+      color: #721c24;
+      background: #f8d7da;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
     footer {
       margin-top: auto;
       text-align: center;
@@ -182,6 +266,8 @@
     @media (max-width: 900px) {
       .main-content { padding: 30px 20px; }
       .search-container { width: 100%; }
+      .profile-info { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 600px) {
       body { flex-direction: column; }
@@ -222,7 +308,7 @@
   <main class="main-content">
     <div class="header">
       <h1 id="sectionTitle">My Enrolled Classes</h1>
-      <div class="search-container">
+      <div class="search-container" id="searchContainer">
         <input type="search" id="search" placeholder="Search classes..." />
         <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M21 21l-4.35-4.35m2.6-5.15a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0z" stroke="#6999a0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -230,7 +316,9 @@
       </div>
     </div>
 
-    <div class="classes-grid" id="contentArea"></div>
+    <div class="classes-grid" id="contentArea">
+      <div class="loading">Loading...</div>
+    </div>
 
     <footer>
       &copy; 2025 StudentCash | Student Dashboard
@@ -238,148 +326,282 @@
   </main>
 
   <script>
-    // Check if user is logged in (add this at the beginning of the script)
+    // Global variables
+    let currentData = [];
+    
+    // Check authentication
     async function checkAuth() {
       try {
         const response = await fetch('/student');
         if (!response.ok) {
-          window.location.href = 'email_e_password.html';
+          window.location.href = '/login';
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        window.location.href = 'email_e_password.html';
+        window.location.href = '/login';
       }
     }
 
-    // Call auth check when page loads
-    checkAuth();
-
-    const searchInput = document.getElementById('search');
-    const contentArea = document.getElementById('contentArea');
-    const sectionTitle = document.getElementById('sectionTitle');
-    const navLinks = document.querySelectorAll('.nav-item[data-section]');
-    const logoutBtn = document.getElementById('logout');
-
-    const studentClasses = [
-      {id:1, title:'Finance 101', date:'2025-06-20', time:'10:00', progress: 65, grade: 'B+'},
-      {id:2, title:'Budgeting Basics', date:'2025-06-22', time:'14:00', progress: 80, grade: 'A-'},
-      {id:3, title:'Investing for Students', date:'2025-06-21', time:'09:00', progress: 40, grade: 'C+'},
-      {id:4, title:'Crypto & Blockchain', date:'2025-06-23', time:'13:30', progress: 90, grade: 'A'},
-    ];
-
-    const attendanceData = [
-      { title: 'Finance 101', attended: 8, total: 10 },
-      { title: 'Budgeting Basics', attended: 10, total: 10 },
-      { title: 'Investing for Students', attended: 6, total: 10 },
-      { title: 'Crypto & Blockchain', attended: 9, total: 10 },
-    ];
-
-    const profileData = {
-      name: 'Joana Silva',
-      email: 'joana.silva@studentcash.com',
-      studentId: 'SC2025123',
-      major: 'Finance & Economics',
-      year: '2nd Year',
-    };
-
-    function renderClasses() {
-      sectionTitle.textContent = 'My Enrolled Classes';
-      searchInput.style.display = '';
-      contentArea.innerHTML = '';
-      studentClasses.forEach(cls => {
-        const card = document.createElement('div');
-        card.classList.add('class-card');
-        card.setAttribute('data-title', cls.title.toLowerCase());
-        card.innerHTML = `
-          <div class="class-title">${cls.title}</div>
-          <div class="class-info">Next session: ${cls.date} at ${cls.time}</div>
-          <div class="progress-container"><div class="progress-bar" style="width: ${cls.progress}%;"></div></div>
-          <div class="grade-info">Current Grade: ${cls.grade}</div>
-        `;
-        contentArea.appendChild(card);
-      });
-    }
-
-    function renderGrades() {
-      sectionTitle.textContent = 'Grades';
-      searchInput.style.display = 'none';
-      contentArea.innerHTML = '';
-      studentClasses.forEach(cls => {
-        const card = document.createElement('div');
-        card.classList.add('class-card');
-        card.innerHTML = `
-          <div class="class-title">${cls.title}</div>
-          <div class="grade-info">Final Grade: ${cls.grade}</div>
-        `;
-        contentArea.appendChild(card);
-      });
-    }
-
-    function renderAttendance() {
-      sectionTitle.textContent = 'Attendance';
-      searchInput.style.display = 'none';
-      contentArea.innerHTML = '';
-      attendanceData.forEach(cls => {
-        const percentage = Math.round((cls.attended / cls.total) * 100);
-        const card = document.createElement('div');
-        card.classList.add('class-card');
-        card.innerHTML = `
-          <div class="class-title">${cls.title}</div>
-          <div class="class-info">Attended ${cls.attended} of ${cls.total} classes (${percentage}%)</div>
-          <div class="progress-container"><div class="progress-bar" style="width: ${percentage}%;"></div></div>
-        `;
-        contentArea.appendChild(card);
-      });
-    }
-
-    function renderProfile() {
-      sectionTitle.textContent = 'My Profile';
-      searchInput.style.display = 'none';
-      contentArea.innerHTML = `
-        <div class="class-card">
-          <div class="class-title">Name: ${profileData.name}</div>
-          <div class="class-info">
-            Email: ${profileData.email}<br>
-            Student ID: ${profileData.studentId}<br>
-            Major: ${profileData.major}<br>
-            Year: ${profileData.year}
-          </div>
-        </div>
-      `;
-    }
-
-    navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        navLinks.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-        const section = link.getAttribute('data-section');
-        if (section === 'classes') renderClasses();
-        else if (section === 'grades') renderGrades();
-        else if (section === 'attendance') renderAttendance();
-        else if (section === 'profile') renderProfile();
-      });
-    });
-
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase();
-      const cards = contentArea.querySelectorAll('.class-card');
-      cards.forEach(card => {
-        const title = card.getAttribute('data-title');
-        card.style.display = title && title.includes(query) ? '' : 'none';
-      });
-    });
-
-    logoutBtn.addEventListener('click', async () => {
+    // API calls
+    async function fetchClasses() {
       try {
-        await fetch('/logout');
-        window.location.href = "{{ url_for('index')}}";
+        const response = await fetch('/api/student/classes');
+        const data = await response.json();
+        if (data.success) {
+          return data.classes;
+        } else {
+          throw new Error(data.message);
+        }
       } catch (error) {
-        console.error('Logout error:', error);
-        window.location.href = "{{ url_for('index')}}";
+        console.error('Error fetching classes:', error);
+        throw error;
       }
-    });
+    }
 
-    renderClasses();
+    async function fetchGrades() {
+      try {
+        const response = await fetch('/api/student/grades');
+        const data = await response.json();
+        if (data.success) {
+          return data.grades;
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error fetching grades:', error);
+        throw error;
+      }
+    }
+
+    async function fetchAttendance() {
+      try {
+        const response = await fetch('/api/student/attendance');
+        const data = await response.json();
+        if (data.success) {
+          return data.attendance;
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error fetching attendance:', error);
+        throw error;
+      }
+    }
+
+    async function fetchProfile() {
+      try {
+        const response = await fetch('/api/student/profile');
+        const data = await response.json();
+        if (data.success) {
+          return data.profile;
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+    }
+
+    // Render functions
+    async function renderClasses() {
+      document.getElementById('sectionTitle').textContent = 'My Enrolled Classes';
+      document.getElementById('searchContainer').style.display = '';
+      const contentArea = document.getElementById('contentArea');
+      
+      try {
+        contentArea.innerHTML = '<div class="loading">Loading classes...</div>';
+        const classes = await fetchClasses();
+        currentData = classes;
+        
+        contentArea.innerHTML = '';
+        if (classes.length === 0) {
+          contentArea.innerHTML = '<div class="error">No classes found.</div>';
+          return;
+        }
+        
+        classes.forEach(cls => {
+          const card = document.createElement('div');
+          card.classList.add('class-card');
+          card.setAttribute('data-title', cls.title.toLowerCase());
+          card.innerHTML = `
+            <div class="class-title">${cls.title}</div>
+            <div class="class-info">
+              Teacher: ${cls.teacher}<br>
+              Next session: ${cls.date} at ${cls.time}
+            </div>
+          `;
+          contentArea.appendChild(card);
+        });
+      } catch (error) {
+        contentArea.innerHTML = '<div class="error">Error loading classes. Please try again.</div>';
+      }
+    }
+
+    async function renderGrades() {
+      document.getElementById('sectionTitle').textContent = 'My Grades';
+      document.getElementById('searchContainer').style.display = 'none';
+      const contentArea = document.getElementById('contentArea');
+      
+      try {
+        contentArea.innerHTML = '<div class="loading">Loading grades...</div>';
+        const grades = await fetchGrades();
+        
+        contentArea.innerHTML = '';
+        if (grades.length === 0) {
+          contentArea.innerHTML = '<div class="error">No grades found.</div>';
+          return;
+        }
+        
+        grades.forEach(grade => {
+          const card = document.createElement('div');
+          card.classList.add('class-card');
+          card.innerHTML = `
+            <div class="class-title">${grade.class_title}</div>
+            <div class="class-info">Teacher: ${grade.teacher}</div>
+            <div class="progress-container">
+              <div class="progress-bar" style="width: ${grade.percentage}%;"></div>
+            </div>
+            <div class="grade-info">Grade: ${grade.grade} (${grade.percentage}%)</div>
+          `;
+          contentArea.appendChild(card);
+        });
+      } catch (error) {
+        contentArea.innerHTML = '<div class="error">Error loading grades. Please try again.</div>';
+      }
+    }
+
+    async function renderAttendance() {
+      document.getElementById('sectionTitle').textContent = 'My Attendance';
+      document.getElementById('searchContainer').style.display = 'none';
+      const contentArea = document.getElementById('contentArea');
+      
+      try {
+        contentArea.innerHTML = '<div class="loading">Loading attendance...</div>';
+        const attendance = await fetchAttendance();
+        
+        contentArea.innerHTML = '';
+        if (attendance.length === 0) {
+          contentArea.innerHTML = '<div class="error">No attendance records found.</div>';
+          return;
+        }
+        
+        attendance.forEach(record => {
+          const card = document.createElement('div');
+          card.classList.add('class-card');
+          card.innerHTML = `
+            <div class="class-title">${record.class_title}</div>
+            <div class="class-info">
+              Teacher: ${record.teacher}<br>
+              Date: ${record.class_date} at ${record.class_time}
+            </div>
+            <div class="attendance-status ${record.attended ? 'attended' : 'not-attended'}">
+              ${record.attended ? 'Present' : 'Absent'}
+            </div>
+          `;
+          contentArea.appendChild(card);
+        });
+      } catch (error) {
+        contentArea.innerHTML = '<div class="error">Error loading attendance. Please try again.</div>';
+      }
+    }
+
+    async function renderProfile() {
+      document.getElementById('sectionTitle').textContent = 'My Profile';
+      document.getElementById('searchContainer').style.display = 'none';
+      const contentArea = document.getElementById('contentArea');
+      
+      try {
+        contentArea.innerHTML = '<div class="loading">Loading profile...</div>';
+        const profile = await fetchProfile();
+        
+        contentArea.innerHTML = `
+          <div class="profile-card">
+            <div class="profile-info">
+              <div class="profile-field">
+                <div class="profile-label">Full Name</div>
+                <div class="profile-value">${profile.name}</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-label">Email</div>
+                <div class="profile-value">${profile.email}</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-label">Student ID</div>
+                <div class="profile-value">${profile.student_id}</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-label">Attendance Rate</div>
+                <div class="profile-value">${profile.attendance_rate}%</div>
+              </div>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-number">${profile.total_classes}</div>
+                <div class="stat-label">Total Classes</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">${profile.attended_classes}</div>
+                <div class="stat-label">Classes Attended</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">${profile.total_classes - profile.attended_classes}</div>
+                <div class="stat-label">Classes Missed</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        contentArea.innerHTML = '<div class="error">Error loading profile. Please try again.</div>';
+      }
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      checkAuth();
+      
+      const navLinks = document.querySelectorAll('.nav-item[data-section]');
+      const searchInput = document.getElementById('search');
+      const logoutBtn = document.getElementById('logout');
+
+      // Navigation
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+          const section = link.getAttribute('data-section');
+          
+          if (section === 'classes') renderClasses();
+          else if (section === 'grades') renderGrades();
+          else if (section === 'attendance') renderAttendance();
+          else if (section === 'profile') renderProfile();
+        });
+      });
+
+      // Search functionality
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+        const cards = document.querySelectorAll('.class-card[data-title]');
+        cards.forEach(card => {
+          const title = card.getAttribute('data-title');
+          card.style.display = title && title.includes(query) ? '' : 'none';
+        });
+      });
+
+      // Logout
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await fetch('/logout');
+          window.location.href = '/';
+        } catch (error) {
+          console.error('Logout error:', error);
+          window.location.href = '/';
+        }
+      });
+
+      // Load initial content
+      renderClasses();
+    });
   </script>
 
 </body>

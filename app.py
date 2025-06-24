@@ -420,15 +420,19 @@ def get_student_classes():
     try:
         get_db_connection()
         
-        # For now, return all classes (you might want to implement enrollment)
+        # Return all classes (you might want to implement enrollment later)
         classes = Class.select()
         classes_data = []
         for cls in classes:
+            # Get teacher name
+            teacher = User.get(User.UserID == cls.UserID)
+            
             classes_data.append({
                 'id': cls.ClassID,
                 'title': cls.Title,
                 'date': cls.ClassDate,
-                'time': cls.ClassTime
+                'time': cls.ClassTime,
+                'teacher': teacher.Name
             })
         return jsonify({'success': True, 'classes': classes_data})
     except Exception as e:
@@ -444,19 +448,115 @@ def get_student_attendance():
         get_db_connection()
         
         student_id = session['user_id']
-        attendance = Attendance.select().where(Attendance.StudentID == student_id)
+        
+        # Get all classes and their attendance for this student
+        classes = Class.select()
         attendance_data = []
-        for att in attendance:
+        
+        for cls in classes:
+            # Check if student attended this class
+            try:
+                attendance = Attendance.get((Attendance.ClassID == cls.ClassID) & (Attendance.StudentID == student_id))
+                attended = attendance.attend == 1
+            except DoesNotExist:
+                attended = False
+            
+            # Get teacher name
+            teacher = User.get(User.UserID == cls.UserID)
+            
             attendance_data.append({
-                'class_id': att.ClassID.ClassID,
-                'class_title': att.ClassID.Title,
-                'attended': att.attend
+                'class_id': cls.ClassID,
+                'class_title': cls.Title,
+                'class_date': cls.ClassDate,
+                'class_time': cls.ClassTime,
+                'teacher': teacher.Name,
+                'attended': attended
             })
+        
         return jsonify({'success': True, 'attendance': attendance_data})
     except Exception as e:
         print(f"Get student attendance error: {e}")
         return jsonify({'success': False, 'message': 'Error loading attendance'})
 
+@app.route('/api/student/grades')
+def get_student_grades():
+    if 'user_role' not in session or session['user_role'] != 'student':
+        return jsonify({'success': False, 'message': 'Access denied'})
+    
+    try:
+        get_db_connection()
+        
+        student_id = session['user_id']
+        
+        # Get all classes and calculate attendance-based grades
+        classes = Class.select()
+        grades_data = []
+        
+        for cls in classes:
+            # Calculate attendance percentage for this class
+            try:
+                attendance = Attendance.get((Attendance.ClassID == cls.ClassID) & (Attendance.StudentID == student_id))
+                attended = attendance.attend == 1
+            except DoesNotExist:
+                attended = False
+            
+            # Simple grade calculation based on attendance (you can modify this logic)
+            if attended:
+                grade = 'A'
+                percentage = 100
+            else:
+                grade = 'F'
+                percentage = 0
+            
+            # Get teacher name
+            teacher = User.get(User.UserID == cls.UserID)
+            
+            grades_data.append({
+                'class_id': cls.ClassID,
+                'class_title': cls.Title,
+                'teacher': teacher.Name,
+                'grade': grade,
+                'percentage': percentage
+            })
+        
+        return jsonify({'success': True, 'grades': grades_data})
+    except Exception as e:
+        print(f"Get student grades error: {e}")
+        return jsonify({'success': False, 'message': 'Error loading grades'})
 
-if __name__ == '__main__':
+@app.route('/api/student/profile')
+def get_student_profile():
+    if 'user_role' not in session or session['user_role'] != 'student':
+        return jsonify({'success': False, 'message': 'Access denied'})
+    
+    try:
+        get_db_connection()
+        
+        student_id = session['user_id']
+        student = Student.get(Student.StudentID == student_id)
+        
+        # Calculate overall statistics
+        total_classes = Class.select().count()
+        attended_classes = Attendance.select().where(
+            (Attendance.StudentID == student_id) & (Attendance.attend == 1)
+        ).count()
+        
+        attendance_rate = (attended_classes / total_classes * 100) if total_classes > 0 else 0
+        
+        profile_data = {
+            'name': student.Name,
+            'email': student.Email,
+            'student_id': f'SC{student.StudentID:06d}',
+            'total_classes': total_classes,
+            'attended_classes': attended_classes,
+            'attendance_rate': round(attendance_rate, 1)
+        }
+        
+        return jsonify({'success': True, 'profile': profile_data})
+    except Exception as e:
+        print(f"Get student profile error: {e}")
+        return jsonify({'success': False, 'message': 'Error loading profile'})
+
+
+if __name__ == '_main_':
     app.run(debug=True)
