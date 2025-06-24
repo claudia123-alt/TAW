@@ -222,19 +222,31 @@ def add_teacher():
     try:
         get_db_connection()
         
-        # Check if email already exists
-        existing = User.select().where(User.Email == data.get('teacheremail')).exists()
-        if existing:
+        # Validate required fields
+        name = data.get('teachername')
+        email = data.get('teacheremail')
+        password = data.get('teacherpassword')
+        
+        if not name or not email or not password:
+            return jsonify({'success': False, 'message': 'All fields are required'})
+        
+        # Check if email already exists in User table
+        existing_user = User.select().where(User.Email == email).exists()
+        if existing_user:
+            return jsonify({'success': False, 'message': 'Email already exists'})
+        
+        # Check if email already exists in Student table
+        existing_student = Student.select().where(Student.Email == email).exists()
+        if existing_student:
             return jsonify({'success': False, 'message': 'Email already exists'})
         
         # Validate password
-        password = data.get('teacherpassword')
-        if not password or len(password) < 6:
+        if len(password) < 6:
             return jsonify({'success': False, 'message': 'Password must be at least 6 characters long'})
         
         User.create(
-            Name=data.get('teachername'),
-            Email=data.get('teacheremail'),
+            Name=name,
+            Email=email,
             Password=hash_password(password),
             is_admin=0
         )
@@ -252,19 +264,31 @@ def add_student():
     try:
         get_db_connection()
         
-        # Check if email already exists
-        existing = Student.select().where(Student.Email == data.get('studentemail')).exists()
-        if existing:
+        # Validate required fields
+        name = data.get('studentname')
+        email = data.get('studentemail')
+        password = data.get('studentpassword')
+        
+        if not name or not email or not password:
+            return jsonify({'success': False, 'message': 'All fields are required'})
+        
+        # Check if email already exists in Student table
+        existing_student = Student.select().where(Student.Email == email).exists()
+        if existing_student:
+            return jsonify({'success': False, 'message': 'Email already exists'})
+        
+        # Check if email already exists in User table
+        existing_user = User.select().where(User.Email == email).exists()
+        if existing_user:
             return jsonify({'success': False, 'message': 'Email already exists'})
         
         # Validate password
-        password = data.get('studentpassword')
-        if not password or len(password) < 6:
+        if len(password) < 6:
             return jsonify({'success': False, 'message': 'Password must be at least 6 characters long'})
         
         Student.create(
-            Name=data.get('studentname'),
-            Email=data.get('studentemail'),
+            Name=name,
+            Email=email,
             Password=hash_password(password)
         )
         return jsonify({'success': True, 'message': 'Student added successfully'})
@@ -343,6 +367,49 @@ def save_attendance():
     except Exception as e:
         print(f"Save attendance error: {e}")
         return jsonify({'success': False, 'message': 'Error saving attendance'})
+
+@app.route('/api/teacher/students')
+def get_students():
+    if 'user_role' not in session or session['user_role'] != 'teacher':
+        return jsonify({'success': False, 'message': 'Access denied'})
+    
+    try:
+        get_db_connection()
+        
+        students = Student.select()
+        students_data = []
+        for student in students:
+            students_data.append({
+                'id': student.StudentID,
+                'name': student.Name,
+                'email': student.Email
+            })
+        return jsonify({'success': True, 'students': students_data})
+    except Exception as e:
+        print(f"Get students error: {e}")
+        return jsonify({'success': False, 'message': 'Error loading students'})
+
+@app.route('/api/teacher/class-attendance/<int:class_id>')
+def get_class_attendance(class_id):
+    if 'user_role' not in session or session['user_role'] != 'teacher':
+        return jsonify({'success': False, 'message': 'Access denied'})
+    
+    try:
+        get_db_connection()
+        
+        # Verify the class belongs to the current teacher
+        class_obj = Class.get((Class.ClassID == class_id) & (Class.UserID == session['user_id']))
+        
+        # Get attendance records for this class
+        attendance_records = Attendance.select().where(Attendance.ClassID == class_id)
+        present_students = [att.StudentID.StudentID for att in attendance_records if att.attend == 1]
+        
+        return jsonify({'success': True, 'present_students': present_students})
+    except DoesNotExist:
+        return jsonify({'success': False, 'message': 'Class not found or access denied'})
+    except Exception as e:
+        print(f"Get class attendance error: {e}")
+        return jsonify({'success': False, 'message': 'Error loading attendance'})
 
 # API Routes for Student functionality
 @app.route('/api/student/classes')
