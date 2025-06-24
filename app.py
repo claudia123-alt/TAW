@@ -558,5 +558,5 @@ def get_student_profile():
         return jsonify({'success': False, 'message': 'Error loading profile'})
 
 
-if __name__ == '_main_':
+if __name__ == '__main__':
     app.run(debug=True)
