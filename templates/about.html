@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Help - StudentCash</title>
+  <title>About - StudentCash</title>
   <style>
     * {
       margin: 0; padding: 0; box-sizing: border-box;
     }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: url('gif.gif') no-repeat center center fixed;
+      background: url("{{ url_for('static', filename='images/gif.gif') }}") no-repeat center center fixed;
       background-size: cover;
       color: #e0f2f1;
       height: 100vh;
@@ -50,20 +50,6 @@
       color: #cde7e3;
       text-shadow: 1px 1px 6px rgba(0,0,0,0.6);
     }
-    ul {
-      text-align: left;
-      margin-bottom: 40px;
-      font-size: 1.4rem;
-      line-height: 1.6;
-      color: #cde7e3;
-      text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
-      list-style-type: disc;
-      padding-left: 20px;
-    }
-    ul a {
-      color: #a0dcd5;
-      text-decoration: underline;
-    }
     a.button {
       display: inline-block;
       background-color: #1c5c68;
@@ -94,17 +80,15 @@
 <body>
 
   <div class="container">
-    <h1>Need Help?</h1>
-    <p>If you have questions or need assistance with StudentCash, here are some helpful tips:</p>
+    <h1>About StudentCash</h1>
+    <p>
+      StudentCash is your personal finance companion designed to help students manage their money wisely. Our platform offers educational resources, budgeting tools, and practical tips to empower you on your financial journey.
+    </p>
+    <p>
+      We believe that financial literacy is key to success, and we’re here to make learning about money simple, engaging, and effective.
+    </p>
 
-    <ul>
-      <li>Check your internet connection.</li>
-      <li>Make sure you’re using the latest browser version.</li>
-      <li>Try refreshing the page or clearing your browser cache.</li>
-      <li>Contact support via email at <a href="mailto:support@studentcash.com">support@studentcash.com</a>.</li>
-    </ul>
-
-    <a href="index.html" class="button">Back to Home</a>
+    <a href="{{ url_for('index')}}" class="button">Back to Home</a>
   </div>
 
   <footer>&copy; 2025 StudentCash.</footer>

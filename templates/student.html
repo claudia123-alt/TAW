@@ -238,6 +238,22 @@
   </main>
 
   <script>
+    // Check if user is logged in (add this at the beginning of the script)
+    async function checkAuth() {
+      try {
+        const response = await fetch('/student');
+        if (!response.ok) {
+          window.location.href = 'email_e_password.html';
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = 'email_e_password.html';
+      }
+    }
+
+    // Call auth check when page loads
+    checkAuth();
+
     const searchInput = document.getElementById('search');
     const contentArea = document.getElementById('contentArea');
     const sectionTitle = document.getElementById('sectionTitle');
@@ -353,8 +369,14 @@
       });
     });
 
-    logoutBtn.addEventListener('click', () => {
-      window.location.href = 'index.html';
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/logout');
+        window.location.href = "{{ url_for('index')}}";
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = "{{ url_for('index')}}";
+      }
     });
 
     renderClasses();

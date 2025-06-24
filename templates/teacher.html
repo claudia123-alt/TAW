@@ -364,6 +364,44 @@
     renderMaterials(classes[0].id);
     updateChart();
   }
+
+// Add logout functionality
+function logout() {
+  fetch('/logout')
+    .then(() => {
+      window.location.href = "{{ url_for('index') }}";
+    })
+    .catch(error => {
+      console.error('Logout error:', error);
+      window.location.href = "{{ url_for('index')}}";
+    });
+}
+
+// Add logout button to header
+const header = document.querySelector('header');
+const logoutBtn = document.createElement('button');
+logoutBtn.textContent = 'Logout';
+logoutBtn.style.position = 'absolute';
+logoutBtn.style.top = '15px';
+logoutBtn.style.right = '15px';
+logoutBtn.onclick = logout;
+header.style.position = 'relative';
+header.appendChild(logoutBtn);
+
+// Check authentication
+async function checkAuth() {
+  try {
+    const response = await fetch('/teacher');
+    if (!response.ok) {
+      window.location.href = 'email_e_password.html';
+    }
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    window.location.href = 'email_e_password.html';
+  }
+}
+
+checkAuth();
 </script>
 </body>
 </html>

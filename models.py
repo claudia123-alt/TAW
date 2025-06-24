@@ -25,7 +25,7 @@ class Student(BaseModel):
 
 class Class(BaseModel):
     ClassID = AutoField()
-    UserID = ForeignKeyField(User, backref="classes")
+    UserID = ForeignKeyField(User, backref="classes", column_name="UserID")
     Title = TextField(null=False)
     ClassDate = TextField(null=True)
     ClassTime = TextField(null=True)
@@ -34,8 +34,8 @@ class Class(BaseModel):
 
 class Attendance(BaseModel):
     AttendanceID = AutoField()
-    ClassID = ForeignKeyField(Class, backref="attendances")
-    StudentID = ForeignKeyField(Student, backref="attendances")
+    ClassID = ForeignKeyField(Class, backref="attendances", column_name="ClassID")
+    StudentID = ForeignKeyField(Student, backref="attendances", column_name="StudentID")
     attend = IntegerField(default=0)
     class Meta:
         table_name = 'attendence'
