@@ -74,70 +74,6 @@ def about():
 def help():
     return render_template('help.html')
 
-@app.route('/create-account', methods=['GET', 'POST'])
-def create_account():
-    if request.method == 'POST':
-        data = request.get_json() if request.is_json else request.form
-        fullname = data.get('fullname')
-        email = data.get('email')
-        password = data.get('password')
-        role = data.get('perfil')
-
-        if not all([fullname, email, password, role]):
-            if request.is_json:
-                return jsonify({'success': False, 'message': 'All fields are required'})
-            flash("All fields are required.")
-            return redirect(url_for('create_account'))
-
-        try:
-            get_db_connection()
-            
-            # Check if email already exists
-            if role == 'student':
-                existing = Student.select().where(Student.Email == email).exists()
-            else:
-                existing = User.select().where(User.Email == email).exists()
-            
-            if existing:
-                message = "Email already exists."
-                if request.is_json:
-                    return jsonify({'success': False, 'message': message})
-                flash(message)
-                return redirect(url_for('create_account'))
-
-            # Hash password
-            hashed_password = hash_password(password)
-
-            # Create account based on role
-            if role == 'student':
-                Student.create(
-                    Name=fullname,
-                    Email=email,
-                    Password=hashed_password
-                )
-            elif role == 'teacher':
-                User.create(
-                    Name=fullname,
-                    Email=email,
-                    Password=hashed_password,
-                    is_admin=0
-                )
-
-            if request.is_json:
-                return jsonify({'success': True, 'message': 'Account created successfully'})
-            flash("Account created successfully! Please login.")
-            return redirect(url_for('login'))
-
-        except Exception as e:
-            print(f"Account creation error: {e}")
-            message = "Error creating account. Please try again."
-            if request.is_json:
-                return jsonify({'success': False, 'message': message})
-            flash(message)
-            return redirect(url_for('create_account'))
-
-    return render_template('create-account.html')
-
 @app.route('/forgot-password')
 def forgot_password():
     return render_template('forgot-password.html')
@@ -242,6 +178,12 @@ def student():
         flash("Access denied. Student privileges required.")
         return redirect(url_for('login'))
     return render_template('student.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("You have been logged out successfully.")
+    return redirect(url_for('index'))
 
 # API Routes for Admin functionality
 @app.route('/api/admin/add-class', methods=['POST'])
@@ -448,11 +390,6 @@ def get_student_attendance():
         print(f"Get student attendance error: {e}")
         return jsonify({'success': False, 'message': 'Error loading attendance'})
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash("You have been logged out successfully.")
-    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
